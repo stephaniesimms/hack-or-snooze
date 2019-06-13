@@ -58,6 +58,29 @@ $(async function() {
     loginAndSubmitForm();
   });
 
+  //
+  $submitStoryForm.on("submit", async function(evt){
+    evt.preventDefault() 
+    
+    let user = currentUser;
+    let author = $("#author").val(); 
+    let title = $("#title").val();
+    let url = $("#url").val();
+    
+    let newStory = {
+      story: {
+        author: author,
+        title: title,
+        url: url
+      }
+    };
+
+    await storyList.addStory(user, newStory)
+    // TODO: HTML append story to storylist
+    // TODO: show/hide form and reset
+
+  })
+
   /**
    * Log Out Functionality
    */
@@ -182,7 +205,7 @@ $(async function() {
 
   function hideElements() {
     const elementsArr = [
-      $submitForm,
+      $submitStoryForm,
       $allStoriesList,
       $filteredArticles,
       $ownStories,

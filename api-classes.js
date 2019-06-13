@@ -1,5 +1,5 @@
 const BASE_URL = "https://hack-or-snooze-v3.herokuapp.com";
-
+const TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InN0ZXBoYW5pZSIsImlhdCI6MTU2MDQ0NzgxNX0.bMHDt2YyVkJGK47h1baLMZkMf94Jf2nWPrZdhT4L6iY"
 /**
  * This class maintains the list of individual Story instances
  *  It also has some methods for fetching, adding, and removing stories
@@ -43,10 +43,35 @@ class StoryList {
    * Returns the new story object
    */
 
+   // {
+    //   "token": "YOUR_TOKEN_HERE",
+    //     "story": {
+    //     "author": "Matt Lane",
+    //       "title": "The best story ever",
+    //         "url": "http://google.com"
+    //   }
+    // }
+
   async addStory(user, newStory) {
     // TODO - Implement this functions!
     // this function should return the newly created story so it can be used in
     // the script.js file where it will be appended to the DOM
+    const postRequest = {
+      token: user.loginToken,
+      story: {
+        author: newStory.story.author,
+        title: newStory.story.title,
+        url: newStory.story.url
+      }
+    }
+
+    await axios.post(`${BASE_URL}/stories`, postRequest)
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   }
 }
 
