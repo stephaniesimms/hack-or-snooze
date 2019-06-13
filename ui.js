@@ -78,10 +78,12 @@ $(async function() {
       }
     };
 
-    await storyList.addStory(user, newStory)
+    newStory = await storyList.addStory(user, newStory)
     
-    // TODO: HTML append story to storylist
-    // TODO: show/hide form and reset
+    //HTML prepend story to storylist
+    $allStoriesList.prepend(generateStoryHTML(newStory.story))
+    // hide form and reset
+    resetSubmitStoryForm();
 
   })
 
@@ -160,6 +162,21 @@ $(async function() {
     $allStoriesList.show();
 
     // update the navigation bar
+    showNavForLoggedInUser();
+  }
+
+/**
+* A rendering function to run to reset and hide the story form
+*/
+
+  function resetSubmitStoryForm() {
+    // hide the forms for logging in and signing up
+    $submitStoryForm.slideToggle();
+
+    // reset form
+    $submitStoryForm.trigger("reset");
+
+    //update the navigation bar 
     showNavForLoggedInUser();
   }
 

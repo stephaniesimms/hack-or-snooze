@@ -53,12 +53,17 @@ class StoryList {
 
     await axios.post(`${BASE_URL}/stories`, postRequest)
       .then(function (response) {
-        console.log(response);
+        newStory.story.storyId = response.data.story.storyId
       })
       .catch(function (error) {
         console.log(error);
-      });      
+      }); 
+
+
+    return newStory
   }
+
+  
 
 }
 
