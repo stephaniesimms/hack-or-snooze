@@ -63,25 +63,27 @@ $(async function() {
  *  If successful we will add a new story to the story list.
  */
   $submitStoryForm.on("submit", async function(evt){
-    evt.preventDefault() 
+    evt.preventDefault();
     
     let user = currentUser;
     let author = $("#author").val(); 
     let title = $("#title").val();
     let url = $("#url").val();
+    let username = currentUser.username;
     
     let newStory = {
       story: {
         author: author,
         title: title,
-        url: url
+        url: url,
+        username: username
       }
     };
 
-    newStory = await storyList.addStory(user, newStory)
+    newStory = await storyList.addStory(user, newStory);
     
     //HTML prepend story to storylist
-    $allStoriesList.prepend(generateStoryHTML(newStory.story))
+    $allStoriesList.prepend(generateStoryHTML(newStory.story));
     // hide form and reset
     resetSubmitStoryForm();
 
@@ -109,11 +111,16 @@ $(async function() {
     $allStoriesList.toggle();
   });
 
+  /**
+   * Event Handler for Submitting Story
+   */
+
   $navSubmitStory.on("click", function() {
     //Show the Submit Story Form
     $submitStoryForm.slideToggle();
     
   })
+
   /**
    * Event handler for Navigation to Homepage
    */
@@ -175,9 +182,6 @@ $(async function() {
 
     // reset form
     $submitStoryForm.trigger("reset");
-
-    //update the navigation bar 
-    showNavForLoggedInUser();
   }
 
   /**

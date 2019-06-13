@@ -48,19 +48,15 @@ class StoryList {
         author: newStory.story.author,
         title: newStory.story.title,
         url: newStory.story.url
+        
       }
     }
 
-    await axios.post(`${BASE_URL}/stories`, postRequest)
-      .then(function (response) {
-        newStory.story.storyId = response.data.story.storyId
-      })
-      .catch(function (error) {
-        console.log(error);
-      }); 
+    let response = await axios.post(`${BASE_URL}/stories`, postRequest);
 
+    newStory.story.storyId = response.data.story.storyId;
 
-    return newStory
+    return newStory;
   }
 
   
