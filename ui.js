@@ -1,13 +1,14 @@
 $(async function() {
   // cache some selectors we'll be using quite a bit
   const $allStoriesList = $("#all-articles-list");
-  const $submitForm = $("#submit-form");
+  const $submitStoryForm = $("#submit-story-form");
   const $filteredArticles = $("#filtered-articles");
   const $loginForm = $("#login-form");
   const $createAccountForm = $("#create-account-form");
   const $ownStories = $("#my-articles");
   const $navLogin = $("#nav-login");
   const $navLogOut = $("#nav-logout");
+  const $navSubmitStory = $("#nav-submit-story");
 
   // global storyList variable
   let storyList = null;
@@ -79,6 +80,11 @@ $(async function() {
     $allStoriesList.toggle();
   });
 
+  $navSubmitStory.on("click", function() {
+    //Show the Submit Story Form
+    $submitStoryForm.slideToggle();
+    
+  })
   /**
    * Event handler for Navigation to Homepage
    */
