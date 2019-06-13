@@ -36,26 +36,12 @@ class StoryList {
   }
 
   /**
-   * Method to make a POST request to /stories and add the new story to the list
+   * Function to make a post request for a new story submission.
    * - user - the current instance of User who will post the story
    * - newStory - a new story object for the API with title, author, and url
-   *
-   * Returns the new story object
+   * If successful we will be able to add a new story to the story list.
    */
-
-   // {
-    //   "token": "YOUR_TOKEN_HERE",
-    //     "story": {
-    //     "author": "Matt Lane",
-    //       "title": "The best story ever",
-    //         "url": "http://google.com"
-    //   }
-    // }
-
   async addStory(user, newStory) {
-    // TODO - Implement this functions!
-    // this function should return the newly created story so it can be used in
-    // the script.js file where it will be appended to the DOM
     const postRequest = {
       token: user.loginToken,
       story: {
@@ -71,8 +57,9 @@ class StoryList {
       })
       .catch(function (error) {
         console.log(error);
-      });
+      });      
   }
+
 }
 
 

@@ -58,7 +58,10 @@ $(async function() {
     loginAndSubmitForm();
   });
 
-  //
+/**
+ * Event listener for submitting new story.
+ *  If successful we will add a new story to the story list.
+ */
   $submitStoryForm.on("submit", async function(evt){
     evt.preventDefault() 
     
@@ -76,6 +79,7 @@ $(async function() {
     };
 
     await storyList.addStory(user, newStory)
+    
     // TODO: HTML append story to storylist
     // TODO: show/hide form and reset
 
