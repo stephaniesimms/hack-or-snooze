@@ -49,9 +49,13 @@ nav {
   margin: 0 15px;
 }
 
+.navbar-brand {
+  padding-right: 14px;
+}
+
 .nav-link {
   font-size: 0.85rem;
-  margin: 0 3px;
+  margin: 0 8px;
 }
 
 .nav-right {

@@ -120,8 +120,7 @@ $(async function() {
   $navSubmitStory.on("click", function() {
     //Show the Submit Story Form
     $submitStoryForm.slideToggle();
-    
-  })
+  });
 
   /**
    * Event handler for Navigation to Homepage
@@ -131,6 +130,33 @@ $(async function() {
     hideElements();
     await generateStories();
     $allStoriesList.show();
+  });
+
+  /**
+   * Event handler for Navigation to Favorites page
+   */
+  $("body").on("click", "#nav-favorites", async function() {
+    hideElements();
+    await generateFavorites();
+    $favoritedArticles.show();
+  });
+
+  /**
+  * Event handler for updating starred favorites
+  */
+  $("body").on("click", ".star", async function(evt) {
+    const $star = $(evt.target);
+    $star.toggleClass("far fas");
+    
+    const $storyId = $star.parent().attr('id');
+
+    if ($star.hasClass("fas")) {
+      User.postFavoritedStory(currentUser, $storyId);
+    } else {
+      User.deleteFavoritedStory(currentUser, $storyId);
+    }
+
+    // console.log($star.parent().attr('id'))
   });
 
   /**
@@ -186,11 +212,22 @@ $(async function() {
     $submitStoryForm.trigger("reset");
   }
 
+  /**
+   * A rendering function to call the StoryList.getFavorites static method,
+   *  which will generate a story list instance. Then render it.
+   */
 
-  function generateFavorites() {
-    // get request to getFavorites
-    
+  async function generateFavorites() {
+    // get instance of StoryList
+    const favoritesStoryList = await StoryList.getFavorites(currentUser);
+    //update our global variable
+    storyList = favoritesStoryList;
+    //empty that part of the page
+    $favoritedArticles.empty();
+
+    generateStoryListHTML(storyList, $favoritedArticles);
   }
+
 
 
   /**
@@ -206,10 +243,27 @@ $(async function() {
     // empty out that part of the page
     $allStoriesList.empty();
 
-    // loop through all of our stories and generate HTML for them
+    //first param storyList second param dom parent element to append to
+    generateStoryListHTML(storyList, $allStoriesList);
+  }
+
+
+  // loop through all of our stories and generate HTML for them
+
+  async function generateStoryListHTML(storyList, parent) {
+    const favoritesList = await StoryList.getFavorites(currentUser);
+
+    const favoritesListIds = [];
+
+    for (let story of favoritesList.stories) {
+      favoritesListIds.push(story.storyId)
+    }
+
     for (let story of storyList.stories) {
-      const result = generateStoryHTML(story);
-      $allStoriesList.append(result);
+      const isFavorited = favoritesListIds.includes(story.storyId)
+
+      const result = generateStoryHTML(story, isFavorited);
+      parent.append(result);
     }
   }
 
@@ -217,13 +271,20 @@ $(async function() {
    * A function to render HTML for an individual Story instance
    */
 
-  function generateStoryHTML(story) {
+  function generateStoryHTML(story, isFavorited) {
     let hostName = getHostName(story.url);
+
+    let starClass = "fa-star star";
+    if (isFavorited) {
+      starClass = starClass + " fas"
+    } else {
+      starClass = starClass + " far"
+    }
 
     // render story markup
     const storyMarkup = $(`
       <li id="${story.storyId}">
-        <i class="far fa-star star"></i>
+        <i class="${starClass}"></i>
         <a class="article-link" href="${story.url}" target="a_blank">
           <strong>${story.title}</strong>
         </a>
@@ -245,7 +306,8 @@ $(async function() {
       $filteredArticles,
       $ownStories,
       $loginForm,
-      $createAccountForm
+      $createAccountForm,
+      $favoritedArticles
     ];
     elementsArr.forEach($elem => $elem.hide());
   }

@@ -44,6 +44,9 @@ class StoryList {
   *  - returns the favorites StoryList instance.*
   */
   static async getFavorites(user) {
+    if (!user) {
+      return;
+    }
     const username = user.username; 
     const token = user.loginToken;
     
@@ -189,7 +192,29 @@ class User {
     existingUser.ownStories = response.data.user.stories.map(s => new Story(s));
     return existingUser;
   }
- 
+
+  // user class method static async to delete from favorites
+  static async deleteFavoritedStory(user, storyId) {
+    const token = user.loginToken;
+    const username = user.username;
+
+    const response = await axios.delete(`${BASE_URL}/users/${username}/favorites/${storyId}`, {
+      params: {
+        token: token
+      }
+    });
+  }
+
+  // user class method static async to post to favorites
+  static async postFavoritedStory(user, storyId) {
+    const token = user.loginToken;
+    const username = user.username; 
+    
+    const response = await axios.post(`${BASE_URL}/users/${username}/favorites/${storyId}`, {
+      token: token
+    });
+  }
+
 }
 
 
