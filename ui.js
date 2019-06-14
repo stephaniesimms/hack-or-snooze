@@ -1,6 +1,5 @@
 // global currentUser variable
 let currentUser = null;
-
 // global storyList variable
 let storyList = null;
 
@@ -14,11 +13,14 @@ $(async function() {
   const $createAccountForm = $("#create-account-form");
   const $ownStories = $("#my-articles");
   const $favoritedArticles = $("#favorited-articles");
+  const $myArticles = $("#my-articles");
   const $navFavorites = $("#nav-favorites");
+  const $navMyStories = $("#nav-my-stories");
   const $navLogin = $("#nav-login");
   const $navLogOut = $("#nav-logout");
   const $loggedInNav = $("#logged-in-nav");
   const $navSubmitStory = $("#nav-submit-story");  
+  const $navAll = $("#nav-all");
 
   await checkIfLoggedIn();
 
@@ -86,6 +88,9 @@ $(async function() {
 
     newStory = await storyList.addStory(user, newStory);
     
+    newStoryInstance = new Story(newStory.story)
+    currentUser.ownStories.push(newStoryInstance)
+    
     //HTML prepend story to storylist
     $allStoriesList.prepend(generateStoryHTML(newStory.story));
     // hide form and reset
@@ -118,19 +123,20 @@ $(async function() {
   /**
    * Event Handler for Submitting Story
    */
-
   $navSubmitStory.on("click", function() {
     //Show the Submit Story Form
+    hideElements();
     $submitStoryForm.slideToggle();
+    $allStoriesList.show();
   });
 
   /**
    * Event handler for Navigation to Homepage
    */
 
-  $("body").on("click", "#nav-all", async function() {
+  $navAll.on("click", async function() {
     hideElements();
-    await generateStories();
+    await generateAllStories();
     $allStoriesList.show();
   });
 
@@ -138,10 +144,20 @@ $(async function() {
    * Event handler for Navigation to Favorites page
    */
 
-  $("body").on("click", "#nav-favorites", async function() {
+  $navFavorites.on("click", async function() {
     hideElements();
-    await generateFavorites();
+    generateFavorites();
     $favoritedArticles.show();
+  });
+
+  /**
+   * Event handler for Navigation to Favorites page
+   */
+
+  $navMyStories.on("click", async function () {
+    hideElements();
+    generateMyStories();
+    $myArticles.show();
   });
 
   /**
@@ -165,9 +181,22 @@ $(async function() {
     }
 
     const response = await User.toggleFavoritedStory(currentUser, $storyId, request);
+    
     currentUser.favorites = response.data.user.favorites
   });
 
+  $("body").on("click", ".trash", async function(evt) {
+    const $storyId = $(evt.target).parent().attr('id');
+
+    const response = await StoryList.deleteStory(currentUser, $storyId);
+
+    for (let i = 0; i < currentUser.ownStories.length; i++) {
+      if (currentUser.ownStories[i].storyId === response.data.story.storyId) {
+        currentUser.ownStories.splice(i, 1)
+      }
+    }
+    generateMyStories()
+  })
   /**
    * On page load, checks local storage to see if the user is already logged in.
    * Renders page information accordingly.
@@ -182,7 +211,7 @@ $(async function() {
     //  to get an instance of User with the right details
     //  this is designed to run once, on page load
     currentUser = await User.getLoggedInUser(token, username);
-    await generateStories();
+    await generateAllStories();
 
     if (currentUser) {
       showNavForLoggedInUser();
@@ -221,6 +250,20 @@ $(async function() {
     $submitStoryForm.trigger("reset");
   }
 
+
+  function generateMyStories() {
+    const myStoriesStoryList = new StoryList(currentUser.ownStories);
+    storyList = myStoriesStoryList;
+
+    $myArticles.empty();
+
+    if (storyList.stories.length === 0) {
+      $myArticles.append(`<p>No stories added by user yet!</p>`);
+    } else {
+      generateStoryListHTML(storyList, $myArticles);
+    }
+  }
+
   /**
    * A rendering function to call the StoryList.getFavorites static method,
    *  which will generate a story list instance. Then render it.
@@ -228,12 +271,12 @@ $(async function() {
 
   function generateFavorites() {
     // get instance of StoryList
-    const favoritesStoryList = currentUser.favorites;
+    const favoritesStoryList = new StoryList(currentUser.favorites);
     //update our global variable
     storyList = favoritesStoryList;
     //empty that part of the page
     $favoritedArticles.empty();
-    if (storyList.length === 0) {
+    if (storyList.stories.length === 0) {
       $favoritedArticles.append(`<p>No favorites added!</p>`);
     } else {
       generateStoryListHTML(storyList, $favoritedArticles);
@@ -247,11 +290,11 @@ $(async function() {
    *  which will generate a storyListInstance. Then render it.
    */
 
-  async function generateStories() {
+  async function generateAllStories() {
     // get an instance of StoryList
     const storyListInstance = await StoryList.getStories();
     // update our global variable
-    storyList = storyListInstance.stories;
+    storyList = storyListInstance;
     // empty out that part of the page
     $allStoriesList.empty();
 
@@ -263,21 +306,24 @@ $(async function() {
   // loop through all of our stories and generate HTML for them
 
   function generateStoryListHTML(storyList, parent) {
-    const favoritesList = currentUser.favorites;
+    let favoritesListStories;
+    if (currentUser) {
+      favoritesListStories = currentUser.favorites;
+    }
 
     //get list of favoriteListIds for a later check if a story is favorited or not
     const favoritesListIds = [];
-    if (favoritesList) {
-      for (let story of favoritesList) {
+    if (favoritesListStories) {
+      for (let story of favoritesListStories) {
         favoritesListIds.push(story.storyId);
       }
     }
 
-    for (let story of storyList) {
+    for (let story of storyList.stories) {
       //check if story is favorited
       const isFavorited = favoritesListIds.includes(story.storyId);
 
-      const result = generateStoryHTML(story, isFavorited);
+      const result = generateStoryHTML(story, parent, isFavorited);
       parent.append(result);
     }
   }
@@ -286,7 +332,7 @@ $(async function() {
    * A function to render HTML for an individual Story instance
    */
 
-  function generateStoryHTML(story, isFavorited) {
+  function generateStoryHTML(story, parent, isFavorited) {
     let hostName = getHostName(story.url);
 
     let starClass = "fa-star star";
@@ -296,9 +342,14 @@ $(async function() {
       starClass = starClass + " far";
     }
 
+    let trashCan = '';
+    if (parent === $myArticles) {
+      trashCan = `<i class="fa fa-trash trash"></i>`;
+    }
     // render story markup
     const storyMarkup = $(`
       <li id="${story.storyId}">
+        ${trashCan}
         <i class="${starClass}"></i>
         <a class="article-link" href="${story.url}" target="a_blank">
           <strong>${story.title}</strong>

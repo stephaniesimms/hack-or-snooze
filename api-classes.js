@@ -89,6 +89,15 @@ class StoryList {
     return newStory;
   }
 
+  static async deleteStory(user, storyId) {
+    let payload = {
+      data: {
+        token: user.loginToken
+      }
+    }
+    const response = await axios.delete(`${BASE_URL}/stories/${storyId}`, payload);
+    return response
+  }
 }
 
 
@@ -212,6 +221,9 @@ class User {
     const response = await request(`${BASE_URL}/users/${username}/favorites/${storyId}`, payload);
     return response;
   }
+
+  
+
 }
 
 
