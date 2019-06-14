@@ -6,6 +6,8 @@ $(async function() {
   const $loginForm = $("#login-form");
   const $createAccountForm = $("#create-account-form");
   const $ownStories = $("#my-articles");
+  const $favoritedArticles = $("#favorited-articles");
+  const $navFavorites = $("#nav-favorites");
   const $navLogin = $("#nav-login");
   const $navLogOut = $("#nav-logout");
   const $navSubmitStory = $("#nav-submit-story");
@@ -184,6 +186,13 @@ $(async function() {
     $submitStoryForm.trigger("reset");
   }
 
+
+  function generateFavorites() {
+    // get request to getFavorites
+    
+  }
+
+
   /**
    * A rendering function to call the StoryList.getStories static method,
    *  which will generate a storyListInstance. Then render it.
@@ -214,6 +223,7 @@ $(async function() {
     // render story markup
     const storyMarkup = $(`
       <li id="${story.storyId}">
+        <i class="far fa-star star"></i>
         <a class="article-link" href="${story.url}" target="a_blank">
           <strong>${story.title}</strong>
         </a>

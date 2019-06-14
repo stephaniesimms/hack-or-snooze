@@ -35,6 +35,33 @@ class StoryList {
     return storyList;
   }
 
+/**
+  * This method is designed to be called to generate a new favorite StoryList.
+  *  It:
+  *  - calls the API
+  *  - builds an array of Story instances from the user's favorites array
+  *  - makes a single favorites StoryList instance out of that
+  *  - returns the favorites StoryList instance.*
+  */
+  static async getFavorites(user) {
+    const username = user.username; 
+    const token = user.loginToken;
+    
+    // query the users endpoint (auth token depends on currentUser)
+    const response = await axios.get(`${BASE_URL}/users/${username}/`, {
+      params: {
+        token: token
+      }
+    });
+
+    // turn favorites obj from API into instance of the Story class
+    const favorites = response.data.user.favorites.map(story => new Story(story));
+
+    // build an instance of favorite stories using the new array of favorites 
+    const favoritesList = new StoryList(favorites);
+    return favoritesList;
+  }
+
   /**
    * Function to make a post request for a new story submission.
    * - user - the current instance of User who will post the story
@@ -58,8 +85,6 @@ class StoryList {
 
     return newStory;
   }
-
-  
 
 }
 
@@ -164,7 +189,10 @@ class User {
     existingUser.ownStories = response.data.user.stories.map(s => new Story(s));
     return existingUser;
   }
+ 
 }
+
+
 
 /**
  * Class to represent a single story.
