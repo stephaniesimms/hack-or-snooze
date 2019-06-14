@@ -193,28 +193,25 @@ class User {
     return existingUser;
   }
 
-  // user class method static async to delete from favorites
-  static async deleteFavoritedStory(user, storyId) {
-    const token = user.loginToken;
+  //user class method that deletes or posts to favorites depending on third param (axios.delete, axios.post)
+  static async toggleFavoritedStory(user, storyId, request) {
+    const token = {
+      token: user.loginToken
+    };
     const username = user.username;
-
-    const response = await axios.delete(`${BASE_URL}/users/${username}/favorites/${storyId}`, {
-      params: {
-        token: token
-      }
-    });
-  }
-
-  // user class method static async to post to favorites
-  static async postFavoritedStory(user, storyId) {
-    const token = user.loginToken;
-    const username = user.username; 
+    let payload;
     
-    const response = await axios.post(`${BASE_URL}/users/${username}/favorites/${storyId}`, {
-      token: token
-    });
-  }
+    if (request === axios.delete) {
+      payload = {
+        data: token
+      };
+    } else {
+      payload = token;
+    }
 
+    const response = await request(`${BASE_URL}/users/${username}/favorites/${storyId}`, payload);
+    return response;
+  }
 }
 
 

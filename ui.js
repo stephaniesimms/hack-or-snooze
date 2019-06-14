@@ -18,9 +18,7 @@ $(async function() {
   const $navLogin = $("#nav-login");
   const $navLogOut = $("#nav-logout");
   const $loggedInNav = $("#logged-in-nav");
-  const $navSubmitStory = $("#nav-submit-story");
-
-  
+  const $navSubmitStory = $("#nav-submit-story");  
 
   await checkIfLoggedIn();
 
@@ -139,6 +137,7 @@ $(async function() {
   /**
    * Event handler for Navigation to Favorites page
    */
+
   $("body").on("click", "#nav-favorites", async function() {
     hideElements();
     await generateFavorites();
@@ -148,6 +147,7 @@ $(async function() {
   /**
   * Event handler for updating starred favorites
   */
+
   $("body").on("click", ".star", async function(evt) {
     if (!currentUser) {
       return null;
@@ -157,13 +157,15 @@ $(async function() {
     
     const $storyId = $star.parent().attr('id');
 
+    let request;
     if ($star.hasClass("fas")) {
-      User.postFavoritedStory(currentUser, $storyId);
+      request = axios.post;
     } else {
-      User.deleteFavoritedStory(currentUser, $storyId);
+      request = axios.delete;
     }
 
-    // console.log($star.parent().attr('id'))
+    const response = await User.toggleFavoritedStory(currentUser, $storyId, request);
+    currentUser.favorites = response.data.user.favorites
   });
 
   /**
@@ -224,15 +226,18 @@ $(async function() {
    *  which will generate a story list instance. Then render it.
    */
 
-  async function generateFavorites() {
+  function generateFavorites() {
     // get instance of StoryList
-    const favoritesStoryList = await StoryList.getFavorites(currentUser);
+    const favoritesStoryList = currentUser.favorites;
     //update our global variable
     storyList = favoritesStoryList;
     //empty that part of the page
     $favoritedArticles.empty();
-
-    generateStoryListHTML(storyList, $favoritedArticles);
+    if (storyList.length === 0) {
+      $favoritedArticles.append(`<p>No favorites added!</p>`);
+    } else {
+      generateStoryListHTML(storyList, $favoritedArticles);
+    }
   }
 
 
@@ -246,7 +251,7 @@ $(async function() {
     // get an instance of StoryList
     const storyListInstance = await StoryList.getStories();
     // update our global variable
-    storyList = storyListInstance;
+    storyList = storyListInstance.stories;
     // empty out that part of the page
     $allStoriesList.empty();
 
@@ -257,19 +262,20 @@ $(async function() {
 
   // loop through all of our stories and generate HTML for them
 
-  async function generateStoryListHTML(storyList, parent) {
-    const favoritesList = await StoryList.getFavorites(currentUser);
+  function generateStoryListHTML(storyList, parent) {
+    const favoritesList = currentUser.favorites;
 
+    //get list of favoriteListIds for a later check if a story is favorited or not
     const favoritesListIds = [];
-
     if (favoritesList) {
-      for (let story of favoritesList.stories) {
-        favoritesListIds.push(story.storyId)
+      for (let story of favoritesList) {
+        favoritesListIds.push(story.storyId);
       }
     }
 
-    for (let story of storyList.stories) {
-      const isFavorited = favoritesListIds.includes(story.storyId)
+    for (let story of storyList) {
+      //check if story is favorited
+      const isFavorited = favoritesListIds.includes(story.storyId);
 
       const result = generateStoryHTML(story, isFavorited);
       parent.append(result);
@@ -285,9 +291,9 @@ $(async function() {
 
     let starClass = "fa-star star";
     if (isFavorited) {
-      starClass = starClass + " fas"
+      starClass = starClass + " fas";
     } else {
-      starClass = starClass + " far"
+      starClass = starClass + " far";
     }
 
     // render story markup
@@ -327,6 +333,8 @@ $(async function() {
     $navLogOut.show();
     $loggedInNav.removeClass("hidden");
   }
+
+  
 
   /* simple function to pull the hostname from a URL */
 
