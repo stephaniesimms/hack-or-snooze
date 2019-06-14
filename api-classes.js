@@ -45,7 +45,7 @@ class StoryList {
   */
   static async getFavorites(user) {
     if (!user) {
-      return;
+      return null;
     }
     const username = user.username; 
     const token = user.loginToken;

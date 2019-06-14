@@ -1,3 +1,10 @@
+// global currentUser variable
+let currentUser = null;
+
+// global storyList variable
+let storyList = null;
+
+
 $(async function() {
   // cache some selectors we'll be using quite a bit
   const $allStoriesList = $("#all-articles-list");
@@ -10,13 +17,10 @@ $(async function() {
   const $navFavorites = $("#nav-favorites");
   const $navLogin = $("#nav-login");
   const $navLogOut = $("#nav-logout");
+  const $loggedInNav = $("#logged-in-nav");
   const $navSubmitStory = $("#nav-submit-story");
 
-  // global storyList variable
-  let storyList = null;
-
-  // global currentUser variable
-  let currentUser = null;
+  
 
   await checkIfLoggedIn();
 
@@ -145,6 +149,9 @@ $(async function() {
   * Event handler for updating starred favorites
   */
   $("body").on("click", ".star", async function(evt) {
+    if (!currentUser) {
+      return null;
+    }
     const $star = $(evt.target);
     $star.toggleClass("far fas");
     
@@ -255,8 +262,10 @@ $(async function() {
 
     const favoritesListIds = [];
 
-    for (let story of favoritesList.stories) {
-      favoritesListIds.push(story.storyId)
+    if (favoritesList) {
+      for (let story of favoritesList.stories) {
+        favoritesListIds.push(story.storyId)
+      }
     }
 
     for (let story of storyList.stories) {
@@ -307,14 +316,16 @@ $(async function() {
       $ownStories,
       $loginForm,
       $createAccountForm,
-      $favoritedArticles
+      $favoritedArticles,
     ];
+
     elementsArr.forEach($elem => $elem.hide());
   }
 
   function showNavForLoggedInUser() {
     $navLogin.hide();
     $navLogOut.show();
+    $loggedInNav.removeClass("hidden");
   }
 
   /* simple function to pull the hostname from a URL */
